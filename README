@@ -1,0 +1,2 @@
+# ImageDescribeBot
+A bot that describes random images from Wikimedia using Computer Vision API from Microsoft, AWS &amp; Google. Inspired by https://github.com/elad661/picdescbot
