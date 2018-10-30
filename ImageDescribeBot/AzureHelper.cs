@@ -18,17 +18,18 @@ namespace ImageDescribeBot
             client.Endpoint = apiEndpoint;
         }
 
-        public async Task<string> DescribeImageUri(string imageUrl)
+        public async Task<string> DescribeImageUri(string imageUri)
         {
             try
             {
-                ImageDescription analysisResult = await client.DescribeImageAsync(imageUrl);
+                ImageDescription analysisResult = await client.DescribeImageAsync(imageUri);
                 return analysisResult.Captions[0].Text;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return "Error";
             }
-            
+
         }
     }
 }
