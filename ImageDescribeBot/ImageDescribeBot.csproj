@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Rekognition" Version="3.3.11.10" />
     <PackageReference Include="DotNetEnv" Version="1.2.0" />
     <PackageReference Include="Google.Cloud.Vision.V1" Version="1.2.0" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.ComputerVision" Version="3.2.0" />

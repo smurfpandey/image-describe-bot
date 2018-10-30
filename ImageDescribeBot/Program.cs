@@ -13,7 +13,10 @@ namespace ImageDescribeBot
         static string MS_API_ENDPOINT_NAME = "MICROSOFT_COMPUTER_VISION_API_ENDPOINT";
 
         static string GOOGLE_API_ENABLED = "GOOGLE_COMPUTER_VISION";
-        static string GOOGLE_API_KEY = "GOOGLE_COMPUTER_VISION_API_KEY";
+
+        static string AWS_API_ENABLED = "AWS_COMPUTER_VISION";
+        static string AWS_ACCESS_KEY_NAME = "AWS_ACCESS_KEY";
+        static string AWS_SECRET_KEY_NAME = "AWS_SECRET_KEY";
 
         static void Main(string[] args)
         {
@@ -26,7 +29,11 @@ namespace ImageDescribeBot
             string msApiKey = Environment.GetEnvironmentVariable(MS_API_KEY_NAME);
             string msApiEndpoint = Environment.GetEnvironmentVariable(MS_API_ENDPOINT_NAME);
 
-            bool googleApiEnabled = Convert.ToBoolean(Environment.GetEnvironmentVariable(GOOGLE_API_ENABLED));            
+            bool googleApiEnabled = Convert.ToBoolean(Environment.GetEnvironmentVariable(GOOGLE_API_ENABLED));
+
+            bool awsApiEnabled = Convert.ToBoolean(Environment.GetEnvironmentVariable(AWS_API_ENABLED));
+            string awsAccessKey = Environment.GetEnvironmentVariable(AWS_ACCESS_KEY_NAME);
+            string awsSecretKey = Environment.GetEnvironmentVariable(AWS_SECRET_KEY_NAME);
 
             Stopwatch timer;
             long timeSpentWikiGetImage;
@@ -38,6 +45,7 @@ namespace ImageDescribeBot
             WikimediaHelper objWikiClient = new WikimediaHelper();
             AzureHelper objAzureClient = null;
             GoogleHelper objGoogleClient = null;
+            AWSHelper objAWSClient = null;
 
             if (msApiEnabled)
             {
@@ -48,6 +56,9 @@ namespace ImageDescribeBot
             {
                 objGoogleClient = new GoogleHelper();
             }
+
+            if (awsApiEnabled)
+                objAWSClient = new AWSHelper(awsAccessKey, awsSecretKey);
 
             httpClient.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
 
@@ -90,9 +101,8 @@ namespace ImageDescribeBot
             }
             #endregion
 
-            #region TODO: What did the Google say
-
-            if(objGoogleClient == null)
+            #region What did the Google say
+            if (objGoogleClient == null)
             {
                 Console.WriteLine("Google API not enabled. Skipped.");
             }
@@ -106,10 +116,24 @@ namespace ImageDescribeBot
 
                 Console.WriteLine("Google said in {1}ms: {0}", string.Join(',', googleSaysWhat), timeSpentGoogleLabelImage);
             }
-
             #endregion
 
-            #region TODO: What did the AWS say
+            #region What did the AWS say
+
+            if (objAWSClient == null)
+            {
+                Console.WriteLine("AWS API not enabled. Skipped.");
+            }
+            else
+            {
+                timer = Stopwatch.StartNew();
+                List<string> awsSaysWhat = objAWSClient.DetectImageLabelFromUri(objImage.Url).Result;
+                timer.Stop();
+
+                timeSpentAWSLabelImage = timer.ElapsedMilliseconds;
+
+                Console.WriteLine("AWS said in {1}ms: {0}", string.Join(',', awsSaysWhat), timeSpentAWSLabelImage);
+            }
 
             #endregion
 
