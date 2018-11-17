@@ -36,6 +36,10 @@ namespace ImageDescribeBot.Model
 
     class ImageMetadata
     {
+        public dynamic ObjectName { get; set; }
 
+        public dynamic Restrictions { get; set; }
+
+        public dynamic ImageDescription { get; set; }
     }
 }

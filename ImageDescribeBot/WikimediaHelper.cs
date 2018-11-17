@@ -15,6 +15,8 @@ namespace ImageDescribeBot
         private const string API_BASE = "https://commons.wikimedia.org/w/api.php";
         private static readonly string[] FORMATS = { ".png", ".jpg", ".jpeg", ".gif" };
 
+        private Censorboard objCensor = new Censorboard();
+
         public async Task<WikiImage> GetImage(HttpClient client)
         {
             string reqUri = API_BASE +
@@ -58,6 +60,48 @@ namespace ImageDescribeBot
                 return false;
 
             // We got a picture, now let's verify we can use it.
+            
+            //Check file name for bad words
+            if (objCensor.IsBlacklisted(objWImage.Title))
+            {
+                Console.WriteLine("Image discarded, {0}. badword in page title: {1}", objIInfo.Url, objWImage.Title);
+                return false;
+            }
+
+            // Check picture title for bad words
+            if (objCensor.IsBlacklisted(objIInfo.Metadata.ObjectName.value))
+            {
+                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.Url, objIInfo.Metadata.ObjectName.value);
+                return false;
+            }
+
+            // Check restrictions for more bad words
+            if (objCensor.IsBlacklisted(objIInfo.Metadata.Restrictions.value))
+            {
+                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.Url, objIInfo.Metadata.Restrictions.value);
+                return false;
+            }
+
+            // Check file description for bad words
+            if (objIInfo.Metadata.ImageDescription != null)
+            {
+                string cleanedDescription = Utility.GetTextFromHtml(objIInfo.Metadata.ImageDescription.value);
+                if (objCensor.IsBlacklisted(cleanedDescription))
+                {
+                    Console.WriteLine("Image discarded, {0}. badword in image description: {1}", objIInfo.Url, cleanedDescription);
+                    return false;
+                }
+
+                if (objCensor.ShouldFilterForPhrase(cleanedDescription))
+                {
+                    Console.WriteLine("Image discarded, {0}. blacklisted phrase in image description: {1}", objIInfo.Url, cleanedDescription);
+                    return false;
+                }
+            }
+
+            // The mediawiki API is awful, there's another list of categories which
+            // is not the same as the one requested by asking for "categories".
+            // Fortunately it's still in the API response, under extmetadata.
 
 
             return true;

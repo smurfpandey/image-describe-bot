@@ -42,6 +42,7 @@ namespace ImageDescribeBot
             long timeSpentAWSLabelImage;
 
             HttpClient httpClient = new HttpClient();
+            Censorboard objCensor = new Censorboard();
             WikimediaHelper objWikiClient = new WikimediaHelper();
             AzureHelper objAzureClient = null;
             GoogleHelper objGoogleClient = null;
