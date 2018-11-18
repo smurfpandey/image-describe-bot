@@ -105,5 +105,23 @@ namespace ImageDescribeBot
             sentence = sentence.ToLower().Trim();
             return lstWikiCategFilter.Exists(word => sentence.Contains(word));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lstSentence"></param>
+        /// <returns>true, when one of the sentence contains a blacklisted category. Else, false.</returns>
+        public bool ShouldFilterForCategory(List<string> lstSentence)
+        {
+            foreach(string categ in lstWikiCategFilter)
+            {
+                if(lstSentence.Exists(sentence => sentence.ToLower().Contains(categ)))
+                {
+                    return true;
+                }
+            }
+
+            return false;            
+        }
     }
 }

@@ -48,6 +48,8 @@ namespace ImageDescribeBot
             GoogleHelper objGoogleClient = null;
             AWSHelper objAWSClient = null;
 
+            string imgUrl = string.Empty;
+
             if (msApiEnabled)
             {
                 objAzureClient = new AzureHelper(msApiKey, msApiEndpoint);

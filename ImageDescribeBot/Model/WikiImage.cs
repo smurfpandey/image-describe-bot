@@ -14,6 +14,12 @@ namespace ImageDescribeBot.Model
 
         [JsonProperty("imageinfo")]
         public List<WikiImage> ImageInfo = new List<WikiImage>();
+
+        [JsonProperty("categories")]
+        public List<dynamic> Category = new List<dynamic>();
+
+        [JsonProperty("globalusage")]
+        public List<dynamic> GlobalUsage = new List<dynamic>();
     }
 
     class WikiImage
@@ -32,6 +38,9 @@ namespace ImageDescribeBot.Model
 
         [JsonProperty("height")]
         public int Height { get; set; }
+
+        [JsonProperty("descriptionurl")]
+        public string DescriptionUrl { get; set; }
     }
 
     class ImageMetadata
@@ -41,5 +50,7 @@ namespace ImageDescribeBot.Model
         public dynamic Restrictions { get; set; }
 
         public dynamic ImageDescription { get; set; }
+
+        public dynamic Categories { get; set; }
     }
 }

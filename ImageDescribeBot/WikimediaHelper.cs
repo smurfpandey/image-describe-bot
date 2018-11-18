@@ -64,21 +64,21 @@ namespace ImageDescribeBot
             //Check file name for bad words
             if (objCensor.IsBlacklisted(objWImage.Title))
             {
-                Console.WriteLine("Image discarded, {0}. badword in page title: {1}", objIInfo.Url, objWImage.Title);
+                Console.WriteLine("Image discarded, {0}. badword in page title: {1}", objIInfo.DescriptionUrl, objWImage.Title);
                 return false;
             }
 
             // Check picture title for bad words
             if (objCensor.IsBlacklisted(objIInfo.Metadata.ObjectName.value))
             {
-                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.Url, objIInfo.Metadata.ObjectName.value);
+                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.ObjectName.value);
                 return false;
             }
 
             // Check restrictions for more bad words
             if (objCensor.IsBlacklisted(objIInfo.Metadata.Restrictions.value))
             {
-                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.Url, objIInfo.Metadata.Restrictions.value);
+                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.Restrictions.value);
                 return false;
             }
 
@@ -88,13 +88,13 @@ namespace ImageDescribeBot
                 string cleanedDescription = Utility.GetTextFromHtml(objIInfo.Metadata.ImageDescription.value);
                 if (objCensor.IsBlacklisted(cleanedDescription))
                 {
-                    Console.WriteLine("Image discarded, {0}. badword in image description: {1}", objIInfo.Url, cleanedDescription);
+                    Console.WriteLine("Image discarded, {0}. badword in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
                     return false;
                 }
 
                 if (objCensor.ShouldFilterForPhrase(cleanedDescription))
                 {
-                    Console.WriteLine("Image discarded, {0}. blacklisted phrase in image description: {1}", objIInfo.Url, cleanedDescription);
+                    Console.WriteLine("Image discarded, {0}. blacklisted phrase in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
                     return false;
                 }
             }
@@ -102,8 +102,38 @@ namespace ImageDescribeBot
             // The mediawiki API is awful, there's another list of categories which
             // is not the same as the one requested by asking for "categories".
             // Fortunately it's still in the API response, under extmetadata.
+            List<string> lstCateg = new List<string>();
+            lstCateg.Add(objIInfo.Metadata.Categories.value);
+            foreach(dynamic objCateg in objWImage.Category)
+            {
+                lstCateg.Add(objCateg.title);
+            }
 
+            if (objCensor.ShouldFilterForCategory(lstCateg))
+            {
+                Console.WriteLine("Image discarded, {0}. blacklisted phrase in categories", objIInfo.DescriptionUrl);
+                return false;
+            }
 
+            // #TODO:: check parent categories for each category in metadata,
+            // and compare them against the blacklist too. This will require
+            // extra API calls
+
+            // if the picture is used in any wikipage with unwanted themes, we probably
+            // don't want to use it.
+            foreach (dynamic wikipage in objWImage.GlobalUsage)
+            {
+                if (objCensor.IsBlacklisted(wikipage.title))
+                {
+                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title);
+                    return false;
+                }
+                if (objCensor.ShouldFilterForCategory(wikipage.title))
+                {
+                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title);
+                    return false;
+                }                
+            }
             return true;
         }
 
