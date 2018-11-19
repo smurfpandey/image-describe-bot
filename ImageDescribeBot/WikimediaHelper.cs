@@ -69,23 +69,23 @@ namespace ImageDescribeBot
             }
 
             // Check picture title for bad words
-            if (objCensor.IsBlacklisted(objIInfo.Metadata.ObjectName.value))
+            if (objCensor.IsBlacklisted(objIInfo.Metadata.ObjectName.value.ToString()))
             {
-                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.ObjectName.value);
+                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.ObjectName.value.ToString());
                 return false;
             }
 
             // Check restrictions for more bad words
-            if (objCensor.IsBlacklisted(objIInfo.Metadata.Restrictions.value))
+            if (objCensor.IsBlacklisted(objIInfo.Metadata.Restrictions.value.ToString()))
             {
-                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.Restrictions.value);
+                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.Restrictions.value.ToString());
                 return false;
             }
 
             // Check file description for bad words
             if (objIInfo.Metadata.ImageDescription != null)
             {
-                string cleanedDescription = Utility.GetTextFromHtml(objIInfo.Metadata.ImageDescription.value);
+                string cleanedDescription = Utility.GetTextFromHtml(objIInfo.Metadata.ImageDescription.value.ToString());
                 if (objCensor.IsBlacklisted(cleanedDescription))
                 {
                     Console.WriteLine("Image discarded, {0}. badword in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
@@ -103,10 +103,10 @@ namespace ImageDescribeBot
             // is not the same as the one requested by asking for "categories".
             // Fortunately it's still in the API response, under extmetadata.
             List<string> lstCateg = new List<string>();
-            lstCateg.Add(objIInfo.Metadata.Categories.value);
+            lstCateg.Add(objIInfo.Metadata.Categories.value.ToString());
             foreach(dynamic objCateg in objWImage.Category)
             {
-                lstCateg.Add(objCateg.title);
+                lstCateg.Add(objCateg.title.ToString());
             }
 
             if (objCensor.ShouldFilterForCategory(lstCateg))
@@ -123,14 +123,14 @@ namespace ImageDescribeBot
             // don't want to use it.
             foreach (dynamic wikipage in objWImage.GlobalUsage)
             {
-                if (objCensor.IsBlacklisted(wikipage.title))
+                if (objCensor.IsBlacklisted(wikipage.title.ToString()))
                 {
-                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title);
+                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
                     return false;
                 }
-                if (objCensor.ShouldFilterForCategory(wikipage.title))
+                if (objCensor.ShouldFilterForCategory(wikipage.title.ToString()))
                 {
-                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title);
+                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
                     return false;
                 }                
             }

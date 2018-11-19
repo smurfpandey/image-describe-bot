@@ -8,15 +8,21 @@ namespace ImageDescribeBot
 {
     class Program
     {
-        static string MS_API_ENABLED = "MICROSOFT_COMPUTER_VISION";
-        static string MS_API_KEY_NAME = "MICROSOFT_COMPUTER_VISION_API_KEY";
-        static string MS_API_ENDPOINT_NAME = "MICROSOFT_COMPUTER_VISION_API_ENDPOINT";
+        static readonly string MS_API_ENABLED = "MICROSOFT_COMPUTER_VISION";
+        static readonly string MS_API_KEY_NAME = "MICROSOFT_COMPUTER_VISION_API_KEY";
+        static readonly string MS_API_ENDPOINT_NAME = "MICROSOFT_COMPUTER_VISION_API_ENDPOINT";
 
-        static string GOOGLE_API_ENABLED = "GOOGLE_COMPUTER_VISION";
+        static readonly string GOOGLE_API_ENABLED = "GOOGLE_COMPUTER_VISION";
 
-        static string AWS_API_ENABLED = "AWS_COMPUTER_VISION";
-        static string AWS_ACCESS_KEY_NAME = "AWS_ACCESS_KEY";
-        static string AWS_SECRET_KEY_NAME = "AWS_SECRET_KEY";
+        static readonly string AWS_API_ENABLED = "AWS_COMPUTER_VISION";
+        static readonly string AWS_ACCESS_KEY_NAME = "AWS_ACCESS_KEY";
+        static readonly string AWS_SECRET_KEY_NAME = "AWS_SECRET_KEY";
+
+        static readonly string TWITTER_CONSUMER_KEY = "TWITTER_CONSUMER_KEY";
+        static readonly string TWITTER_CONSUMER_SECRET = "TWITTER_CONSUMER_SECRET";
+        static readonly string TWITTER_ACCESS_TOKEN = "TWITTER_ACCESS_TOKEN";
+        static readonly string TWITTER_ACCESS_TOKEN_SECRET = "TWITTER_ACCESS_TOKEN_SECRET";
+
 
         static void Main(string[] args)
         {
@@ -35,6 +41,11 @@ namespace ImageDescribeBot
             string awsAccessKey = Environment.GetEnvironmentVariable(AWS_ACCESS_KEY_NAME);
             string awsSecretKey = Environment.GetEnvironmentVariable(AWS_SECRET_KEY_NAME);
 
+            string twitterConsumerKey = Environment.GetEnvironmentVariable(TWITTER_CONSUMER_KEY);
+            string twitterConsumerSecretKey = Environment.GetEnvironmentVariable(TWITTER_CONSUMER_SECRET);
+            string twitterAccessKey = Environment.GetEnvironmentVariable(TWITTER_ACCESS_TOKEN);
+            string twitterAccessSecretKey = Environment.GetEnvironmentVariable(TWITTER_ACCESS_TOKEN_SECRET);
+
             Stopwatch timer;
             long timeSpentWikiGetImage;
             long timeSpentMSDescribeImage;
@@ -47,6 +58,11 @@ namespace ImageDescribeBot
             AzureHelper objAzureClient = null;
             GoogleHelper objGoogleClient = null;
             AWSHelper objAWSClient = null;
+            TwitterHelper objTwitter = null;
+
+            string msSaysWhat = string.Empty;
+            List<string> googleSaysWhat = new List<string>();
+            List<string> awsSaysWhat = new List<string>();
 
             string imgUrl = string.Empty;
 
@@ -64,6 +80,8 @@ namespace ImageDescribeBot
                 objAWSClient = new AWSHelper(awsAccessKey, awsSecretKey);
 
             httpClient.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
+
+            objTwitter = new TwitterHelper(twitterConsumerKey, twitterConsumerSecretKey, twitterAccessKey, twitterAccessSecretKey);
 
             #endregion
 
@@ -95,7 +113,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                string msSaysWhat = objAzureClient.DescribeImageUri(objImage.Url).Result;
+                msSaysWhat = objAzureClient.DescribeImageUri(objImage.Url).Result;
                 timer.Stop();
 
                 timeSpentMSDescribeImage = timer.ElapsedMilliseconds;
@@ -112,7 +130,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                List<string> googleSaysWhat = objGoogleClient.LabelImageFromUri(objImage.Url).Result;
+                googleSaysWhat = objGoogleClient.LabelImageFromUri(objImage.Url).Result;
                 timer.Stop();
 
                 timeSpentGoogleLabelImage = timer.ElapsedMilliseconds;
@@ -130,7 +148,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                List<string> awsSaysWhat = objAWSClient.DetectImageLabelFromUri(objImage.Url).Result;
+                awsSaysWhat = objAWSClient.DetectImageLabelFromUri(objImage.Url).Result;
                 timer.Stop();
 
                 timeSpentAWSLabelImage = timer.ElapsedMilliseconds;
@@ -141,6 +159,8 @@ namespace ImageDescribeBot
             #endregion
 
             #region TODO: Post to twitter
+
+            objTwitter.PostTweet(objImage.Url, msSaysWhat, string.Join(',', googleSaysWhat), string.Join(',', awsSaysWhat));
 
             #endregion
 
