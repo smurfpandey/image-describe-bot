@@ -22,23 +22,12 @@ namespace ImageDescribeBot
             _maxLabels = maxLabels;
         }
 
-        private async Task<MemoryStream> DownloadImage(string imageUri)
-        {
-            HttpClient client = new HttpClient();
-            MemoryStream memStream = new MemoryStream();
-
-            Stream stream = await client.GetStreamAsync(imageUri);
-            await stream.CopyToAsync(memStream);
-
-            return memStream;
-        }
-
-        public async Task<List<string>> DetectImageLabelFromUri(string imageUri)
+        public async Task<List<string>> LabelImage(byte[] imgBytes)
         {
             List<string> lstLabels = new List<string>();
             try
             {
-                MemoryStream memStream = await DownloadImage(imageUri);
+                MemoryStream memStream = new MemoryStream(imgBytes);
                 DetectLabelsRequest detectlabelsRequest = new DetectLabelsRequest()
                 {
                     Image = new Image { Bytes = memStream },

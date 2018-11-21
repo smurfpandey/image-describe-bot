@@ -41,6 +41,12 @@ namespace ImageDescribeBot.Model
 
         [JsonProperty("descriptionurl")]
         public string DescriptionUrl { get; set; }
+
+        [JsonProperty("size")]
+        public int Size { get; set; }
+
+        [JsonProperty("thumburl")]
+        public string ThumbUrl { get; set; }
     }
 
     class ImageMetadata

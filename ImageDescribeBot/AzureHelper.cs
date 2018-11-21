@@ -2,6 +2,7 @@
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,11 +19,12 @@ namespace ImageDescribeBot
             client.Endpoint = apiEndpoint;
         }
 
-        public async Task<string> DescribeImageUri(string imageUri)
+        public async Task<string> DescribeImage(byte[] imgBytes)
         {
             try
             {
-                ImageDescription analysisResult = await client.DescribeImageAsync(imageUri);
+                MemoryStream memStream = new MemoryStream(imgBytes);
+                ImageDescription analysisResult = await client.DescribeImageInStreamAsync(memStream);
                 return analysisResult.Captions[0].Text;
             }
             catch (Exception ex)

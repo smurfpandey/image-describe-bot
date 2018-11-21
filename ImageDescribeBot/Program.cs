@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 
 namespace ImageDescribeBot
@@ -65,6 +66,7 @@ namespace ImageDescribeBot
             List<string> awsSaysWhat = new List<string>();
 
             string imgUrl = string.Empty;
+            byte[] imgBytes = null;
 
             if (msApiEnabled)
             {
@@ -78,8 +80,6 @@ namespace ImageDescribeBot
 
             if (awsApiEnabled)
                 objAWSClient = new AWSHelper(awsAccessKey, awsSecretKey);
-
-            httpClient.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
 
             objTwitter = new TwitterHelper(twitterConsumerKey, twitterConsumerSecretKey, twitterAccessKey, twitterAccessSecretKey);
 
@@ -105,6 +105,17 @@ namespace ImageDescribeBot
 
             #endregion
 
+            #region Download the image
+
+            imgUrl = objImage.Url;
+            if (objImage.Size > 3000000 || objImage.Width > 8192 || objImage.Height > 8192) {
+                imgUrl = objImage.ThumbUrl;
+            }
+
+            imgBytes = Utility.DownloadImage(imgUrl).Result;
+
+            #endregion
+
             #region What did the MS say
             if (objAzureClient == null)
             {
@@ -113,7 +124,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                msSaysWhat = objAzureClient.DescribeImageUri(objImage.Url).Result;
+                msSaysWhat = objAzureClient.DescribeImage(imgBytes).Result;
                 timer.Stop();
 
                 timeSpentMSDescribeImage = timer.ElapsedMilliseconds;
@@ -130,7 +141,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                googleSaysWhat = objGoogleClient.LabelImageFromUri(objImage.Url).Result;
+                googleSaysWhat = objGoogleClient.LabelImage(imgBytes).Result;
                 timer.Stop();
 
                 timeSpentGoogleLabelImage = timer.ElapsedMilliseconds;
@@ -148,7 +159,7 @@ namespace ImageDescribeBot
             else
             {
                 timer = Stopwatch.StartNew();
-                awsSaysWhat = objAWSClient.DetectImageLabelFromUri(objImage.Url).Result;
+                awsSaysWhat = objAWSClient.LabelImage(imgBytes).Result;
                 timer.Stop();
 
                 timeSpentAWSLabelImage = timer.ElapsedMilliseconds;
@@ -158,9 +169,9 @@ namespace ImageDescribeBot
 
             #endregion
 
-            #region TODO: Post to twitter
+            #region Post to twitter
 
-            objTwitter.PostTweet(objImage.Url, msSaysWhat, string.Join(',', googleSaysWhat), string.Join(',', awsSaysWhat));
+            objTwitter.PostTweet(objImage.DescriptionUrl, imgBytes, msSaysWhat, string.Join(", ", googleSaysWhat), string.Join(", ", awsSaysWhat));
 
             #endregion
 
