@@ -10,6 +10,7 @@
     <PackageReference Include="AWSSDK.Rekognition" Version="3.3.11.10" />
     <PackageReference Include="DotNetEnv" Version="1.2.0" />
     <PackageReference Include="Google.Cloud.Vision.V1" Version="1.2.0" />
+    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.ComputerVision" Version="3.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="TweetinviAPI" Version="4.0.0" />
@@ -20,10 +21,6 @@
     <None Update=".env">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
 </Project>
