@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ImageDescribeBot.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace ImageDescribeBot
 {
@@ -16,6 +17,7 @@ namespace ImageDescribeBot
         private static readonly string[] FORMATS = { ".png", ".jpg", ".jpeg", ".gif" };
 
         private Censorboard objCensor = new Censorboard();
+        private static readonly ILogger _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public async Task<WikiImage> GetImage(HttpClient client)
         {
@@ -28,16 +30,23 @@ namespace ImageDescribeBot
                 "&generator=random" +
                 "&grnnamespace=6";
 
-            // make api rquest to wikimedia
-            string response = await client.GetStringAsync(reqUri);
+            try
+            {
+                // make api rquest to wikimedia
+                string response = await client.GetStringAsync(reqUri);
 
-            JObject jObj = JsonConvert.DeserializeObject<JObject>(response);
-            JToken imageData = jObj["query"]["pages"].First.First;
+                JObject jObj = JsonConvert.DeserializeObject<JObject>(response);
+                JToken imageData = jObj["query"]["pages"].First.First;
 
-            WikimediaResponse objWImage = imageData.ToObject<WikimediaResponse>();
+                WikimediaResponse objWImage = imageData.ToObject<WikimediaResponse>();
 
-            if(IsValidImage(objWImage))
-                return objWImage.ImageInfo[0];
+                if (IsValidImage(objWImage))
+                    return objWImage.ImageInfo[0];
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("error getting image from wikipedia", ex);
+            }
 
             return null;
         }
@@ -136,6 +145,5 @@ namespace ImageDescribeBot
             }
             return true;
         }
-
     }
 }

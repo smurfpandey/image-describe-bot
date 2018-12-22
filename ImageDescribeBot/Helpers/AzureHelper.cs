@@ -24,7 +24,7 @@ namespace ImageDescribeBot
             try
             {
                 MemoryStream memStream = new MemoryStream(imgBytes);
-                ImageDescription analysisResult = await client.DescribeImageInStreamAsync(memStream);
+                ImageDescription analysisResult = await client.DescribeImageInStreamAsync(memStream);                
                 return analysisResult.Captions[0].Text;
             }
             catch (Exception ex)

@@ -10,6 +10,11 @@ namespace ImageDescribeBot
         bool IsDebugEnabled { get; }
 
         // continue for all methods like Error, Fatal ...
+        void Info(object message);
+        void InfoFormat(string format, params object[] args);
+        void Warn(object message);
+        void Error(object message, Exception ex = null);
+        
     }
 
     public class Log4NetWrapper : ILogger
@@ -32,6 +37,25 @@ namespace ImageDescribeBot
         }
 
         // complete ILogger interface implementation
+        public void Error(object message, Exception ex = null)
+        {
+            _logger.Error(message, ex);
+        }
+
+        public void Warn(object message)
+        {
+            _logger.Warn(message);
+        }
+
+        public void Info(object message)
+        {
+            _logger.Info(message);
+        }
+
+        public void InfoFormat(string format, params object[] args)
+        {
+            _logger.InfoFormat(format, args);
+        }
     }
 
     public static class LogManager

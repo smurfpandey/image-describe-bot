@@ -43,7 +43,7 @@ namespace ImageDescribeBot
             }
             catch (Exception ex)
             {
-                lstLabels.Add("Error");
+                return null;
             }
 
             return lstLabels;

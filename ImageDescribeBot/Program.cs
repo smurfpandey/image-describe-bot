@@ -1,9 +1,11 @@
 ﻿using ImageDescribeBot.Model;
+using log4net.Config;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 
 namespace ImageDescribeBot
 {
@@ -24,11 +26,16 @@ namespace ImageDescribeBot
         static readonly string TWITTER_ACCESS_TOKEN = "TWITTER_ACCESS_TOKEN";
         static readonly string TWITTER_ACCESS_TOKEN_SECRET = "TWITTER_ACCESS_TOKEN_SECRET";
 
+        private static ILogger _logger;
 
         static void Main(string[] args)
         {
             // load environment variables from local file
             DotNetEnv.Env.Load();
+
+            var logRepository = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
+            XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
+            GetLogger();
 
             #region Initialize stuff
 
@@ -87,39 +94,46 @@ namespace ImageDescribeBot
 
             #region Get Image from Wikimedia
 
-            Console.WriteLine("START: objWikiClient.GetImage()");
+            _logger.Info("START: objWikiClient.GetImage()");
             timer = Stopwatch.StartNew();
             WikiImage objImage = objWikiClient.GetImage(httpClient).Result;
             timer.Stop();
 
             timeSpentWikiGetImage = timer.ElapsedMilliseconds;
-            Console.WriteLine("END: objWikiClient.GetImage()");
+            _logger.Info("END: objWikiClient.GetImage()");
 
             if (objImage == null)
             {
-                Console.WriteLine("No image available.");
+                _logger.Info("No image available.");
                 return;
             }
 
-            Console.WriteLine("Got image from Wiki in {1}ms: {0}", objImage.Url, timeSpentWikiGetImage);
+            _logger.InfoFormat("Got image from Wiki in {1}ms: {0}", objImage.Url, timeSpentWikiGetImage);
 
             #endregion
 
             #region Download the image
 
             imgUrl = objImage.Url;
-            if (objImage.Size > 3000000 || objImage.Width > 8192 || objImage.Height > 8192) {
+            if (objImage.Size > 3000000 || objImage.Width > 8192 || objImage.Height > 8192)
+            {
                 imgUrl = objImage.ThumbUrl;
             }
 
             imgBytes = Utility.DownloadImage(imgUrl).Result;
+
+            if (imgBytes.Length == 0)
+            {
+                _logger.Info("No length image. Return");
+                return;
+            }
 
             #endregion
 
             #region What did the MS say
             if (objAzureClient == null)
             {
-                Console.WriteLine("MS API not enabled. Skipped.");
+                _logger.Info("MS API not enabled. Skipped.");
             }
             else
             {
@@ -129,14 +143,14 @@ namespace ImageDescribeBot
 
                 timeSpentMSDescribeImage = timer.ElapsedMilliseconds;
 
-                Console.WriteLine("MS said in {1}ms: {0}", msSaysWhat, timeSpentMSDescribeImage);
+                _logger.InfoFormat("MS said in {1}ms: {0}", msSaysWhat, timeSpentMSDescribeImage);
             }
             #endregion
 
             #region What did the Google say
             if (objGoogleClient == null)
             {
-                Console.WriteLine("Google API not enabled. Skipped.");
+                _logger.Info("Google API not enabled. Skipped.");
             }
             else
             {
@@ -146,7 +160,7 @@ namespace ImageDescribeBot
 
                 timeSpentGoogleLabelImage = timer.ElapsedMilliseconds;
 
-                Console.WriteLine("Google said in {1}ms: {0}", string.Join(',', googleSaysWhat), timeSpentGoogleLabelImage);
+                _logger.InfoFormat("Google said in {1}ms: {0}", string.Join(',', googleSaysWhat), timeSpentGoogleLabelImage);
             }
             #endregion
 
@@ -154,7 +168,7 @@ namespace ImageDescribeBot
 
             if (objAWSClient == null)
             {
-                Console.WriteLine("AWS API not enabled. Skipped.");
+                _logger.Info("AWS API not enabled. Skipped.");
             }
             else
             {
@@ -164,7 +178,15 @@ namespace ImageDescribeBot
 
                 timeSpentAWSLabelImage = timer.ElapsedMilliseconds;
 
-                Console.WriteLine("AWS said in {1}ms: {0}", string.Join(',', awsSaysWhat), timeSpentAWSLabelImage);
+                if (awsSaysWhat == null || awsSaysWhat.Count == 0)
+                {
+                    _logger.Info("AWS didn't say anything");
+
+                }
+                else
+                {
+                    _logger.InfoFormat("AWS said in {1}ms: {0}", string.Join(',', awsSaysWhat), timeSpentAWSLabelImage);
+                }
             }
 
             #endregion
@@ -175,8 +197,12 @@ namespace ImageDescribeBot
 
             #endregion
 
-            Console.WriteLine("Hello World!");
             Console.ReadLine();
+        }
+
+        private static void GetLogger()
+        {
+            _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         }
     }
 }
