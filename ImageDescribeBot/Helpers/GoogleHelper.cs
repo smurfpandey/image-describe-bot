@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace ImageDescribeBot
 {
     class GoogleHelper
     {
+        private static readonly ILogger _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private ImageAnnotatorClient client;
         private double _confidenceThreshold;
 
@@ -20,9 +22,9 @@ namespace ImageDescribeBot
 
         public async Task<List<string>> LabelImage(byte[] imgBytes)
         {
-            List<string> lstLabels = new List<string>();
             try
             {
+                List<string> lstLabels = new List<string>();
                 Image googleImage = Image.FromBytes(imgBytes);
                 IReadOnlyList<EntityAnnotation> labels = await client.DetectLabelsAsync(googleImage);
 
@@ -33,13 +35,14 @@ namespace ImageDescribeBot
                         lstLabels.Add(label.Description);
                     }
                 }
+                return lstLabels;
             }
             catch (Exception ex)
             {
-                lstLabels.Add("Error");
+                _logger.Error("Error getting info from Google", ex);
+                return null;
             }
 
-            return lstLabels;
         }
     }
 }

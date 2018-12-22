@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace ImageDescribeBot
 {
     class AWSHelper
     {
+        private static readonly ILogger _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private AmazonRekognitionClient client;
         private float _minConfidence;
         private int _maxLabels;
@@ -43,6 +45,7 @@ namespace ImageDescribeBot
             }
             catch (Exception ex)
             {
+                _logger.Error("Error getting info from AWS", ex);
                 return null;
             }
 

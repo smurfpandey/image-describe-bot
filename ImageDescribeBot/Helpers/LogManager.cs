@@ -14,6 +14,8 @@ namespace ImageDescribeBot
         void InfoFormat(string format, params object[] args);
         void Warn(object message);
         void Error(object message, Exception ex = null);
+
+        void Shutdown();
         
     }
 
@@ -55,6 +57,11 @@ namespace ImageDescribeBot
         public void InfoFormat(string format, params object[] args)
         {
             _logger.InfoFormat(format, args);
+        }
+
+        public void Shutdown()
+        {
+            _logger.Logger.Repository.Shutdown();
         }
     }
 

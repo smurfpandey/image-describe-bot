@@ -3,6 +3,7 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace ImageDescribeBot
     class AzureHelper
     {
         private ComputerVisionClient client;
+        private static readonly ILogger _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public AzureHelper(string subscriptionKey, string apiEndpoint)
         {
@@ -29,7 +31,8 @@ namespace ImageDescribeBot
             }
             catch (Exception ex)
             {
-                return "Error";
+                _logger.Error("Error getting info from Azure", ex);
+                return null;
             }
 
         }

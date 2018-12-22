@@ -93,14 +93,12 @@ namespace ImageDescribeBot
             #endregion
 
             #region Get Image from Wikimedia
-
-            _logger.Info("START: objWikiClient.GetImage()");
+            
             timer = Stopwatch.StartNew();
             WikiImage objImage = objWikiClient.GetImage(httpClient).Result;
             timer.Stop();
 
-            timeSpentWikiGetImage = timer.ElapsedMilliseconds;
-            _logger.Info("END: objWikiClient.GetImage()");
+            timeSpentWikiGetImage = timer.ElapsedMilliseconds;            
 
             if (objImage == null)
             {
@@ -122,7 +120,7 @@ namespace ImageDescribeBot
 
             imgBytes = Utility.DownloadImage(imgUrl).Result;
 
-            if (imgBytes.Length == 0)
+            if (imgBytes == null || imgBytes.Length == 0)
             {
                 _logger.Info("No length image. Return");
                 return;
@@ -140,10 +138,15 @@ namespace ImageDescribeBot
                 timer = Stopwatch.StartNew();
                 msSaysWhat = objAzureClient.DescribeImage(imgBytes).Result;
                 timer.Stop();
-
                 timeSpentMSDescribeImage = timer.ElapsedMilliseconds;
+                if (msSaysWhat == null)
+                {
 
-                _logger.InfoFormat("MS said in {1}ms: {0}", msSaysWhat, timeSpentMSDescribeImage);
+                } else
+                {
+                    _logger.InfoFormat("MS said in {1}ms: {0}", msSaysWhat, timeSpentMSDescribeImage);
+                }
+                
             }
             #endregion
 
@@ -180,8 +183,6 @@ namespace ImageDescribeBot
 
                 if (awsSaysWhat == null || awsSaysWhat.Count == 0)
                 {
-                    _logger.Info("AWS didn't say anything");
-
                 }
                 else
                 {
@@ -193,11 +194,13 @@ namespace ImageDescribeBot
 
             #region Post to twitter
 
-            objTwitter.PostTweet(objImage.DescriptionUrl, imgBytes, msSaysWhat, string.Join(", ", googleSaysWhat), string.Join(", ", awsSaysWhat));
+            string tweetUrl = objTwitter.PostTweet(objImage.DescriptionUrl, imgBytes, msSaysWhat, string.Join(", ", googleSaysWhat), string.Join(", ", awsSaysWhat));
+
+            _logger.InfoFormat("Tweet posted: {0}", tweetUrl);
 
             #endregion
 
-            Console.ReadLine();
+            _logger.Shutdown();
         }
 
         private static void GetLogger()
