@@ -60,9 +60,8 @@ namespace ImageDescribeBot
             long timeSpentGoogleLabelImage;
             long timeSpentAWSLabelImage;
 
-            HttpClient httpClient = new HttpClient();
             Censorboard objCensor = new Censorboard();
-            WikimediaHelper objWikiClient = new WikimediaHelper();
+            
             AzureHelper objAzureClient = null;
             GoogleHelper objGoogleClient = null;
             AWSHelper objAWSClient = null;
@@ -95,14 +94,14 @@ namespace ImageDescribeBot
             #region Get Image from Wikimedia
             
             timer = Stopwatch.StartNew();
-            WikiImage objImage = objWikiClient.GetImage(httpClient).Result;
+            WikiImage objImage = GetImage(3);
             timer.Stop();
 
             timeSpentWikiGetImage = timer.ElapsedMilliseconds;            
 
             if (objImage == null)
             {
-                _logger.Info("No image available.");
+                _logger.Info("No image available even after 3 attempts.");
                 return;
             }
 
@@ -206,6 +205,21 @@ namespace ImageDescribeBot
         private static void GetLogger()
         {
             _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        }
+
+        private static WikiImage GetImage(int maxRetry = 3)
+        {
+            int tryCount = 0;
+            WikimediaHelper objWikiClient = new WikimediaHelper();
+            WikiImage objImage = null;
+            do
+            {
+                tryCount++;
+                objImage = objWikiClient.GetImage().Result;
+            } while (objImage == null && tryCount < maxRetry);
+
+            _logger.Info("Got image from wiki after " + tryCount + " retries.");
+            return objImage;
         }
     }
 }
