@@ -19,8 +19,10 @@ namespace ImageDescribeBot
         private Censorboard objCensor = new Censorboard();
         private static readonly ILogger _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public async Task<WikiImage> GetImage(HttpClient client)
+        public async Task<WikiImage> GetImage()
         {
+            HttpClient client = new HttpClient();
+
             string reqUri = API_BASE +
                 "?action=query" +
                 "&prop=imageinfo|categories|globalusage" +
@@ -73,21 +75,21 @@ namespace ImageDescribeBot
             //Check file name for bad words
             if (objCensor.IsBlacklisted(objWImage.Title))
             {
-                Console.WriteLine("Image discarded, {0}. badword in page title: {1}", objIInfo.DescriptionUrl, objWImage.Title);
+                _logger.InfoFormat("Image discarded, {0}. badword in page title: {1}", objIInfo.DescriptionUrl, objWImage.Title);
                 return false;
             }
 
             // Check picture title for bad words
             if (objCensor.IsBlacklisted(objIInfo.Metadata.ObjectName.value.ToString()))
             {
-                Console.WriteLine("Image discarded, {0}. badword in picture title: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.ObjectName.value.ToString());
+                _logger.InfoFormat("Image discarded, {0}. badword in picture title: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.ObjectName.value.ToString());
                 return false;
             }
 
             // Check restrictions for more bad words
             if (objCensor.IsBlacklisted(objIInfo.Metadata.Restrictions.value.ToString()))
             {
-                Console.WriteLine("Image discarded, {0}. badword in restrictions: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.Restrictions.value.ToString());
+                _logger.InfoFormat("Image discarded, {0}. badword in restrictions: {1}", objIInfo.DescriptionUrl, objIInfo.Metadata.Restrictions.value.ToString());
                 return false;
             }
 
@@ -97,13 +99,13 @@ namespace ImageDescribeBot
                 string cleanedDescription = Utility.GetTextFromHtml(objIInfo.Metadata.ImageDescription.value.ToString());
                 if (objCensor.IsBlacklisted(cleanedDescription))
                 {
-                    Console.WriteLine("Image discarded, {0}. badword in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
+                    _logger.InfoFormat("Image discarded, {0}. badword in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
                     return false;
                 }
 
                 if (objCensor.ShouldFilterForPhrase(cleanedDescription))
                 {
-                    Console.WriteLine("Image discarded, {0}. blacklisted phrase in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
+                    _logger.InfoFormat("Image discarded, {0}. blacklisted phrase in image description: {1}", objIInfo.DescriptionUrl, cleanedDescription);
                     return false;
                 }
             }
@@ -120,7 +122,7 @@ namespace ImageDescribeBot
 
             if (objCensor.ShouldFilterForCategory(lstCateg))
             {
-                Console.WriteLine("Image discarded, {0}. blacklisted phrase in categories", objIInfo.DescriptionUrl);
+                _logger.InfoFormat("Image discarded, {0}. blacklisted phrase in categories", objIInfo.DescriptionUrl);
                 return false;
             }
 
@@ -134,12 +136,12 @@ namespace ImageDescribeBot
             {
                 if (objCensor.IsBlacklisted(wikipage.title.ToString()))
                 {
-                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
+                    _logger.InfoFormat("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
                     return false;
                 }
                 if (objCensor.ShouldFilterForCategory(wikipage.title.ToString()))
                 {
-                    Console.WriteLine("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
+                    _logger.InfoFormat("Image discarded, {0}. page usage {1}", objIInfo.DescriptionUrl, wikipage.title.ToString());
                     return false;
                 }                
             }
