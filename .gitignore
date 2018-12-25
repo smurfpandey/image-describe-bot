@@ -331,3 +331,6 @@ ASALocalRun/
 
 # Environment Variables
 .env
+
+# Serverless directories
+.serverless

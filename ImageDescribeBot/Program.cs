@@ -16,6 +16,7 @@ namespace ImageDescribeBot
         static readonly string MS_API_ENDPOINT_NAME = "MICROSOFT_COMPUTER_VISION_API_ENDPOINT";
 
         static readonly string GOOGLE_API_ENABLED = "GOOGLE_COMPUTER_VISION";
+        static readonly string GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
         static readonly string AWS_API_ENABLED = "AWS_COMPUTER_VISION";
         static readonly string AWS_ACCESS_KEY_NAME = "AWS_ACCESS_KEY";
@@ -31,7 +32,8 @@ namespace ImageDescribeBot
         static void Main(string[] args)
         {
             // load environment variables from local file
-            DotNetEnv.Env.Load();
+            if(File.Exists(Path.Combine(Directory.GetCurrentDirectory(), ".env")))
+                DotNetEnv.Env.Load();
 
             var logRepository = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
@@ -44,6 +46,7 @@ namespace ImageDescribeBot
             string msApiEndpoint = Environment.GetEnvironmentVariable(MS_API_ENDPOINT_NAME);
 
             bool googleApiEnabled = Convert.ToBoolean(Environment.GetEnvironmentVariable(GOOGLE_API_ENABLED));
+            string googleAppCredsPath = Environment.GetEnvironmentVariable(GOOGLE_APPLICATION_CREDENTIALS);
 
             bool awsApiEnabled = Convert.ToBoolean(Environment.GetEnvironmentVariable(AWS_API_ENABLED));
             string awsAccessKey = Environment.GetEnvironmentVariable(AWS_ACCESS_KEY_NAME);
@@ -76,16 +79,42 @@ namespace ImageDescribeBot
 
             if (msApiEnabled)
             {
-                objAzureClient = new AzureHelper(msApiKey, msApiEndpoint);
+                if(string.IsNullOrEmpty(msApiKey) || string.IsNullOrEmpty(msApiEndpoint))
+                {
+                    _logger.Warn("Azure client not configured properly.");
+                } else
+                {
+                    objAzureClient = new AzureHelper(msApiKey, msApiEndpoint);
+                }
             }
 
             if (googleApiEnabled)
             {
-                objGoogleClient = new GoogleHelper();
+                if(string.IsNullOrEmpty(googleAppCredsPath) || !File.Exists(googleAppCredsPath))
+                {
+                    _logger.Warn("Google client not configured properly.");
+                } else
+                {
+                    objGoogleClient = new GoogleHelper();
+                }
             }
 
             if (awsApiEnabled)
-                objAWSClient = new AWSHelper(awsAccessKey, awsSecretKey);
+            {
+                if(string.IsNullOrEmpty(awsAccessKey) || string.IsNullOrEmpty(awsSecretKey))
+                {
+                    _logger.Warn("AWS client not configured properly.");
+                } else
+                {
+                    objAWSClient = new AWSHelper(awsAccessKey, awsSecretKey);
+                }
+            }                
+
+            if(string.IsNullOrEmpty(twitterConsumerKey) || string.IsNullOrEmpty(twitterConsumerSecretKey) || string.IsNullOrEmpty(twitterAccessKey) || string.IsNullOrEmpty(twitterAccessSecretKey))
+            {
+                _logger.Warn("Twitter client not configured properly");
+                return;
+            }
 
             objTwitter = new TwitterHelper(twitterConsumerKey, twitterConsumerSecretKey, twitterAccessKey, twitterAccessSecretKey);
 
