@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ReportAPI.Services;
 
 namespace ReportAPI
 {
@@ -25,6 +26,7 @@ namespace ReportAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ImageService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
@@ -43,6 +45,7 @@ namespace ReportAPI
 
             app.UseHttpsRedirection();
             app.UseMvc();
+            app.UseResponseBuffering();
         }
     }
 }
