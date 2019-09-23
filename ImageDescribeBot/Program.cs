@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Sentry;
+using System.Net.Http;
 
 namespace ImageDescribeBot
 {
@@ -17,7 +18,7 @@ namespace ImageDescribeBot
         static readonly string MS_API_ENDPOINT_NAME = "IDB_MICROSOFT_COMPUTER_VISION_API_ENDPOINT";
 
         static readonly string GOOGLE_API_ENABLED = "IDB_GOOGLE_COMPUTER_VISION";
-        static readonly string GOOGLE_APPLICATION_CREDENTIALS = "IDB_GOOGLE_APPLICATION_CREDENTIALS";
+        static readonly string GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
         static readonly string AWS_API_ENABLED = "IDB_AWS_COMPUTER_VISION";
         static readonly string AWS_ACCESS_KEY_NAME = "IDB_AWS_ACCESS_KEY";
@@ -27,6 +28,8 @@ namespace ImageDescribeBot
         static readonly string TWITTER_CONSUMER_SECRET = "IDB_TWITTER_CONSUMER_SECRET";
         static readonly string TWITTER_ACCESS_TOKEN = "IDB_TWITTER_ACCESS_TOKEN";
         static readonly string TWITTER_ACCESS_TOKEN_SECRET = "IDB_TWITTER_ACCESS_TOKEN_SECRET";
+
+        static readonly string HEALTH_CHECK_URL = "IDB_HEALTHCHECK_URL";
 
         private static ILogger _logger;
 
@@ -59,6 +62,16 @@ namespace ImageDescribeBot
                 string twitterConsumerSecretKey = Environment.GetEnvironmentVariable(TWITTER_CONSUMER_SECRET);
                 string twitterAccessKey = Environment.GetEnvironmentVariable(TWITTER_ACCESS_TOKEN);
                 string twitterAccessSecretKey = Environment.GetEnvironmentVariable(TWITTER_ACCESS_TOKEN_SECRET);
+
+                string healthCheckUrl = Environment.GetEnvironmentVariable(HEALTH_CHECK_URL);
+
+                if(string.IsNullOrEmpty(healthCheckUrl))
+                {
+                    _logger.Warn("Healthcheck is not configured.");
+                } else
+                {
+                    await PingHealthCheck(healthCheckUrl, true);
+                }
 
                 Stopwatch timer;
                 long timeSpentWikiGetImage;
@@ -244,6 +257,11 @@ namespace ImageDescribeBot
 
                 _logger.Shutdown();
 
+                if (!string.IsNullOrEmpty(healthCheckUrl))
+                {
+                    await PingHealthCheck(healthCheckUrl, false);
+                }
+
                 return 0;
             }
         }
@@ -266,6 +284,19 @@ namespace ImageDescribeBot
 
             _logger.Info("Got image from wiki after " + tryCount + " retries.");
             return objImage;
+        }
+
+        private static async Task<string> PingHealthCheck(string healthCheckUrl, bool isStart)
+        {
+            HttpClient client = new HttpClient();
+
+            if(isStart)
+            {
+                healthCheckUrl += "/start";
+            }
+
+            await client.GetStringAsync(healthCheckUrl);
+            return "";
         }
     }
 }
