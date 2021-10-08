@@ -8,6 +8,7 @@ using ImageDescribeBot.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
+using System.Net.Http.Headers;
 
 namespace ImageDescribeBot
 {
@@ -32,8 +33,15 @@ namespace ImageDescribeBot
                 "&generator=random" +
                 "&grnnamespace=6";
 
+            var productValue = new ProductInfoHeaderValue("ImageDescBot", "1.0");
+            var commentValue = new ProductInfoHeaderValue("(+https://github.com/smurfpandey/ImageDescribeBot)");
+
             try
             {
+
+                client.DefaultRequestHeaders.UserAgent.Add(productValue);
+                client.DefaultRequestHeaders.UserAgent.Add(commentValue);
+
                 // make api rquest to wikimedia
                 string response = await client.GetStringAsync(reqUri);
 

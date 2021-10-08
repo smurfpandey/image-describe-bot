@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
 
 namespace ImageDescribeBot
 {
@@ -22,6 +23,12 @@ namespace ImageDescribeBot
             try
             {
                 HttpClient client = new HttpClient();
+
+                var productValue = new ProductInfoHeaderValue("ImageDescBot", "1.0");
+                var commentValue = new ProductInfoHeaderValue("(+https://github.com/smurfpandey/ImageDescribeBot)");
+
+                client.DefaultRequestHeaders.UserAgent.Add(productValue);
+                client.DefaultRequestHeaders.UserAgent.Add(commentValue);
                 MemoryStream memStream = new MemoryStream();
 
                 Stream stream = await client.GetStreamAsync(imageUri);
