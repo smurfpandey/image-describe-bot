@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:3.1-bullseye-arm32v7 as builder
+﻿FROM mcr.microsoft.com/dotnet/sdk:3.1 as builder
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 COPY . ./app
 # Remove if it exists https://stackoverflow.com/a/31318262
