@@ -13,7 +13,7 @@
     <PackageReference Include="Google.Cloud.Vision.V1" Version="1.2.0" />
     <PackageReference Include="log4net" Version="2.0.10" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.ComputerVision" Version="3.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Sentry.Log4Net" Version="1.1.0" />
     <PackageReference Include="SumoLogic.Logging.Log4Net" Version="1.0.1.1" />
     <PackageReference Include="TweetinviAPI" Version="4.0.2" />
